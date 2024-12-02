@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Determine the number of days by counting day-xx directories
+total_days=$(find . -maxdepth 1 -type d -name "day-*" | wc -l)
+
+# Use command-line arguments for day and part if provided
+if [ -n "$1" ]; then
+    selected_day=$(printf "%02d" "$1")  # First argument as day
+else
+    # Ask the user to select a day
+    echo "Select a day (1 to $total_days):"
+    read selected_day
+    selected_day=$(printf "%02d" "$selected_day")
+fi
+
+# Check if the main.go file exists for the selected day
+if [ -f "day-$selected_day/main.go" ]; then
+    echo "Running main.go for day $selected_day..."
+    cd "day-$selected_day"  # Change directory to the selected day
+    go run "main.go"
+    cd ..
+else
+    # If main.go does not exist, determine the number of parts
+    total_parts=$(find "day-$selected_day" -maxdepth 1 -type d -name "part-*" | wc -l)
+
+    # Use command-line argument for part if provided
+    if [ -n "$2" ]; then
+        selected_part=$2  # Second argument as part
+    else
+        # Ask the user to select a part
+        echo "Select a part (1 to $total_parts):"
+        read selected_part
+    fi
+
+    # Check if selected_part is valid
+    if [ "$selected_part" -le "$total_parts" ]; then
+        # Run the specified part
+        echo "Running part $selected_part for day $selected_day..."
+        cd "day-$selected_day/part-$selected_part"  # Change directory to the selected day
+        go run "main.go"
+        cd ../..
+    else
+        echo "Invalid part selection. Please select a part between 1 and $total_parts."
+    fi
+fi
